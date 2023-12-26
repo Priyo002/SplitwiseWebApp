@@ -28,7 +28,9 @@ const logInUser = async (req,res) => {
 
     if(isUserExist){
         if(isUserExist.isPasswordCorrect(password)){
-            await User.updateOne({email : isUserExist.email},{isLoggedIn: true});
+            await User.updateOne({email : isUserExist.email},{
+                $set: {isLoggedIn: true}
+            });
             res.status(200).send("Log In Successfully");
         }
         else res.status(404).send("Password is incorrect");
@@ -45,7 +47,9 @@ const logOutUser = async (req,res) => {
 
     if(isUserExist?.isLoggedIn){
         if(isUserExist.isPasswordCorrect(password)){
-            await User.updateOne({email : isUserExist.email},{isLoggedIn: false});
+            await User.updateOne({email : isUserExist.email},{
+                $set: {isLoggedIn: false}
+            });
             res.status(200).send("Log Out Successfully");
         }
         else res.status(404).send("Password is incorrect")
