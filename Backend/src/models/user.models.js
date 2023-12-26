@@ -14,6 +14,9 @@ const userSchema = new Schema({
         type: String,
         required: true
     },
+    history:{
+        type: [String]
+    },
     isLoggedIn:{
         type: Boolean,
         default: false
