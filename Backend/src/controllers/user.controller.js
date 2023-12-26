@@ -43,15 +43,15 @@ const logOutUser = async (req,res) => {
     
     const isUserExist = await User.findOne({email})
 
-    if(isUserExist){
-        if(isUserExist.password===password){
+    if(isUserExist?.isLoggedIn){
+        if(isUserExist.isPasswordCorrect(password)){
             await User.updateOne({email : isUserExist.email},{isLoggedIn: false});
-            res.status(200).send("Log In Successfully");
+            res.status(200).send("Log Out Successfully");
         }
         else res.status(404).send("Password is incorrect")
     }
     else{
-        res.status(404).send("User does not exist register First");
+        res.status(404).send("User does not exist register First or Log in First");
     }
 } 
 
