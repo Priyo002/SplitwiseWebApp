@@ -17,8 +17,9 @@ const registerUser = async (req,res) => {
     if(!user){
         res.status(501).send("Problem on Creating User");
     }
-
-    res.status(200).send("Registered Successfully");
+    console.log("Registered Successfully")
+    res.status(200).send("Registered Successfully")
+    //res.status(200).sendFile( __dirname + '/public/afterLogin.html');
 }
 
 const logInUser = async (req,res) => {
