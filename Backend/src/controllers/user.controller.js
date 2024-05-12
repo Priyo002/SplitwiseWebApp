@@ -1,5 +1,23 @@
 import { User } from "../models/user.models.js";
 
+const generateAccessAndRefreshTokens = async(userId) => {
+    try {
+        const user = await User.findById(userId);
+        const accessToken = user.generateAccessToken()
+        const refreshToken = user.generateRefreshToken()
+        
+        user.refreshToken = refreshToken
+        await user.save({ validateBeforeSave: false })
+
+        return {accessToken, refreshToken}
+
+    } catch (error) {
+        return {
+            error: 400,
+            message: "Error from generateAccessAndRefreshTokens"
+        }
+    }
+}
 const registerUser = async (req,res) => {
 
     const { username, email, password } = req.body;
@@ -7,19 +25,16 @@ const registerUser = async (req,res) => {
     const isUserExist = await User.findOne({email})
 
     if(isUserExist){
-        res.send("User Already Exists try to log in");
+        res.send({message:"User Already Exists try to log in"});
     }
 
     const user = await User.create({
         username,email,password
     })
-
     if(!user){
-        res.status(501).send("Problem on Creating User");
+        res.status(501).json({message:"Problem on Creating User"});
     }
-    console.log("Registered Successfully")
-    res.status(200).send("Registered Successfully")
-    //res.status(200).sendFile( __dirname + '/public/afterLogin.html');
+    res.status(200).json({user,message:"Registered Successfully"})
 }
 
 const logInUser = async (req,res) => {
@@ -32,7 +47,26 @@ const logInUser = async (req,res) => {
             await User.updateOne({email : isUserExist.email},{
                 $set: {isLoggedIn: true}
             });
-            res.status(200).send("Log In Successfully");
+            const {accessToken, refreshToken} = await generateAccessAndRefreshTokens(isUserExist._id)
+
+            const loggedInUser = await User.findById(isUserExist._id).select("-password -refreshToken")
+
+            const options = {
+                httpOnly: true,
+                secure: true
+            }
+            return res
+            .status(200)
+            .cookie("accessToken",accessToken,options)
+            .cookie("refreshToken",refreshToken,options)
+            .json(
+                    {
+                        user: loggedInUser, 
+                        accessToken, 
+                        refreshToken,
+                        message : "User Logged In Successfully"
+                    },
+                )
         }
         else res.status(404).send("Password is incorrect");
     }
